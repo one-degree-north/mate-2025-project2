@@ -1,9 +1,13 @@
 import openai
 import speech_recognition as sr
 import os
+from dotenv import load_dotenv
 
-# Set your OpenAI API key
-openai.api_key = "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"
+# Load environment variables from .env file
+load_dotenv()
+
+# Set your OpenAI API key from the environment variable
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Function to send LIRC command
 def send_lirc_command(remote_name, button_name):
@@ -66,3 +70,5 @@ if __name__ == "__main__":
     print("Starting voice command to LIRC controller and OpenAI API...")
     while True:
         listen_and_process_voice_command()
+
+
