@@ -1,10 +1,9 @@
 import openai
 import speech_recognition as sr
 import os
-import sys
 
-# Set your API key securely (use environment variables instead of hardcoding)
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Set your OpenAI API key
+openai.api_key = "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"
 
 # Function to send LIRC command
 def send_lirc_command(remote_name, button_name):
@@ -15,17 +14,20 @@ def send_lirc_command(remote_name, button_name):
 # Function to be called when voice is recognized
 def my_function():
     print("Voice command recognized! Sending LIRC command...")
+    # Replace 'my_remote' and 'KEY_POWER' with your actual remote name and button
     send_lirc_command("my_remote", "KEY_POWER")
 
-# Function to make a request to OpenAI API (optional use case)
+# Function to make a request to OpenAI's API using the new ChatCompletion
 def ask_openai(prompt):
     try:
-        response = openai.Completion.create(
-            engine="text-davinci-003",
-            prompt=prompt,
-            max_tokens=50
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",  # or any available model, like gpt-4 if you have access
+            messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": prompt}
+            ]
         )
-        return response.choices[0].text.strip()
+        return response['choices'][0]['message']['content'].strip()
     except Exception as e:
         print(f"OpenAI API error: {e}")
         return None
@@ -44,11 +46,11 @@ def listen_and_process_voice_command():
             command = r.recognize_google(audio)
             print(f"You said: {command}")
 
-            # Process recognized command (voice-controlled LIRC)
+            # If the recognized command contains "activate", call the function to send LIRC command
             if "activate" in command.lower():
                 my_function()
 
-            # Optionally, send a prompt to OpenAI API
+            # If the recognized command contains "openai", send a request to OpenAI
             elif "openai" in command.lower():
                 openai_response = ask_openai("What is the capital of France?")
                 if openai_response:
@@ -62,12 +64,5 @@ def listen_and_process_voice_command():
 # Main loop to continuously listen and process voice commands
 if __name__ == "__main__":
     print("Starting voice command to LIRC controller and OpenAI API...")
-    
-    # Check if API key is set
-    if openai.api_key is None:
-        print("Error: OpenAI API key not set.")
-        sys.exit(1)
-    
-    # Continuously listen for voice commands
     while True:
         listen_and_process_voice_command()
